@@ -1,3 +1,4 @@
+// Package discovery provides functions to read hardware NUMA topology.
 package discovery
 
 import (
@@ -7,14 +8,14 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/kust1q/numa-aware-scheduler/pkg/api/numatopology/v1alpha1"
+	"github.com/kust1q/numa-aware-scheduler/pkg/api/v1"
 )
 
 var sysfsNodePath = "/sys/devices/system/node"
 
 // Discover reads NUMA topology from sysfs
-func Discover() (*v1alpha1.NumaTopologySpec, error) {
-	spec := &v1alpha1.NumaTopologySpec{}
+func Discover() (*v1.NumaTopologySpec, error) {
+	spec := &v1.NumaTopologySpec{}
 
 	files, err := os.ReadDir(sysfsNodePath)
 	if err != nil {
@@ -49,7 +50,7 @@ func Discover() (*v1alpha1.NumaTopologySpec, error) {
 			return nil, fmt.Errorf("failed to parse meminfo for node %d: %w", nodeID, err)
 		}
 
-		spec.NumaNodes = append(spec.NumaNodes, v1alpha1.NumaNode{
+		spec.NumaNodes = append(spec.NumaNodes, v1.NumaNode{
 			ID:     nodeID,
 			CPUs:   cpus,
 			Memory: mem,
@@ -60,7 +61,7 @@ func Discover() (*v1alpha1.NumaTopologySpec, error) {
 }
 
 func parseCPUList(path string) ([]int, error) {
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) //nolint:gosec // path is constructed from trusted sysfs directory
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +101,7 @@ func parseCPUList(path string) ([]int, error) {
 }
 
 func parseMemInfo(path string) (int64, error) {
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) //nolint:gosec // path is constructed from trusted sysfs directory
 	if err != nil {
 		return 0, err
 	}

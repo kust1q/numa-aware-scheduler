@@ -1,3 +1,4 @@
+// Package main provides the entry point for the NUMA topology discovery agent.
 package main
 
 import (

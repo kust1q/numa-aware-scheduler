@@ -1,3 +1,4 @@
+// Package k8sclient handles Kubernetes API interactions for the NUMA topology agent.
 package k8sclient
 
 import (
@@ -5,7 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/kust1q/numa-aware-scheduler/pkg/api/numatopology/v1alpha1"
+	v1 "github.com/kust1q/numa-aware-scheduler/pkg/api/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -15,14 +16,16 @@ import (
 
 var numaTopologyGVR = schema.GroupVersionResource{
 	Group:    "topology.numa-aware-scheduler.io",
-	Version:  "v1alpha1",
+	Version:  "v1",
 	Resource: "numatopologies",
 }
 
+// Client wraps the dynamic interface to interact with NumaTopology custom resources.
 type Client struct {
 	dynClient dynamic.Interface
 }
 
+// New creates a new Client configured to run inside a Kubernetes cluster.
 func New() (*Client, error) {
 	config, err := rest.InClusterConfig()
 	if err != nil {
@@ -39,7 +42,8 @@ func New() (*Client, error) {
 	return &Client{dynClient: dynClient}, nil
 }
 
-func (c *Client) UpdateTopology(ctx context.Context, nodeName string, spec *v1alpha1.NumaTopologySpec) error {
+// UpdateTopology creates or updates the NumaTopology custom resource for the given node.
+func (c *Client) UpdateTopology(ctx context.Context, nodeName string, spec *v1.NumaTopologySpec) error {
 	resourceClient := c.dynClient.Resource(numaTopologyGVR)
 
 	existing, errGet := resourceClient.Get(ctx, nodeName, metav1.GetOptions{})

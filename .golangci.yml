@@ -21,4 +21,4 @@ linters:
 issues:
   exclude-use-default: false
   exclude-dirs:
-    - pkg/api/numatopology/v1alpha1
+    - pkg/api/v1

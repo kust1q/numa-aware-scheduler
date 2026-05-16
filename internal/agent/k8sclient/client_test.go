@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/kust1q/numa-aware-scheduler/pkg/api/numatopology/v1alpha1"
+	v1 "github.com/kust1q/numa-aware-scheduler/pkg/api/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -17,8 +17,8 @@ func TestUpdateTopologyCreate(t *testing.T) {
 
 	c := &Client{dynClient: dynClient}
 
-	spec := &v1alpha1.NumaTopologySpec{
-		NumaNodes: []v1alpha1.NumaNode{
+	spec := &v1.NumaTopologySpec{
+		NumaNodes: []v1.NumaNode{
 			{ID: 0, CPUs: []int{0, 1}},
 		},
 	}
@@ -57,8 +57,8 @@ func TestUpdateTopologyUpdate(t *testing.T) {
 	dynClient := fake.NewSimpleDynamicClient(scheme, existing)
 	c := &Client{dynClient: dynClient}
 
-	spec := &v1alpha1.NumaTopologySpec{
-		NumaNodes: []v1alpha1.NumaNode{
+	spec := &v1.NumaTopologySpec{
+		NumaNodes: []v1.NumaNode{
 			{ID: 0, CPUs: []int{0, 1}},
 		},
 	}

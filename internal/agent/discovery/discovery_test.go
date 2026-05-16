@@ -27,7 +27,7 @@ func TestParseCPUList(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := os.WriteFile(file, []byte(tt.content), 0644)
+			err := os.WriteFile(file, []byte(tt.content), 0600)
 			if err != nil {
 				t.Fatalf("failed to write temp file: %v", err)
 			}
@@ -50,7 +50,7 @@ Node 0 MemFree:        10000 kB`
 
 	dir := t.TempDir()
 	file := filepath.Join(dir, "meminfo")
-	err := os.WriteFile(file, []byte(content), 0644)
+	err := os.WriteFile(file, []byte(content), 0600)
 	if err != nil {
 		t.Fatalf("failed to write temp file: %v", err)
 	}
@@ -67,19 +67,33 @@ Node 0 MemFree:        10000 kB`
 
 func TestDiscover(t *testing.T) {
 	dir := t.TempDir()
-	
+
 	node0 := filepath.Join(dir, "node0")
-	os.MkdirAll(node0, 0755)
-	os.WriteFile(filepath.Join(node0, "cpulist"), []byte("0-3\n"), 0644)
-	os.WriteFile(filepath.Join(node0, "meminfo"), []byte("Node 0 MemTotal:       16384 kB\n"), 0644)
+	if err := os.MkdirAll(node0, 0750); err != nil {
+		t.Fatalf("mkdir failed: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(node0, "cpulist"), []byte("0-3\n"), 0600); err != nil {
+		t.Fatalf("write failed: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(node0, "meminfo"), []byte("Node 0 MemTotal:       16384 kB\n"), 0600); err != nil {
+		t.Fatalf("write failed: %v", err)
+	}
 
 	node1 := filepath.Join(dir, "node1")
-	os.MkdirAll(node1, 0755)
-	os.WriteFile(filepath.Join(node1, "cpulist"), []byte("4-7\n"), 0644)
-	os.WriteFile(filepath.Join(node1, "meminfo"), []byte("Node 1 MemTotal:       16384 kB\n"), 0644)
+	if err := os.MkdirAll(node1, 0750); err != nil {
+		t.Fatalf("mkdir failed: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(node1, "cpulist"), []byte("4-7\n"), 0600); err != nil {
+		t.Fatalf("write failed: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(node1, "meminfo"), []byte("Node 1 MemTotal:       16384 kB\n"), 0600); err != nil {
+		t.Fatalf("write failed: %v", err)
+	}
 
 	// dummy dir
-	os.MkdirAll(filepath.Join(dir, "notanode"), 0755)
+	if err := os.MkdirAll(filepath.Join(dir, "notanode"), 0750); err != nil {
+		t.Fatalf("mkdir failed: %v", err)
+	}
 
 	orig := sysfsNodePath
 	sysfsNodePath = dir

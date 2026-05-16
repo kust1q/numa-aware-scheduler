@@ -1,3 +1,4 @@
+// Package numaware implements the NumaAwarePlacement scheduler plugin.
 package numaware
 
 import (
@@ -5,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	numav1 "github.com/kust1q/numa-aware-scheduler/pkg/api/v1"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -12,10 +14,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/kubernetes/pkg/scheduler/framework"
-
-	"github.com/kust1q/numa-aware-scheduler/pkg/api/numatopology/v1alpha1"
 )
 
+// Name is the name of the plugin used in the plugin registry and configurations.
 const (
 	Name = "NumaAwarePlacement"
 )
@@ -26,6 +27,7 @@ var numaTopologyGVR = schema.GroupVersionResource{
 	Resource: "numatopologies",
 }
 
+// NumaAware is a scheduler plugin that considers hardware NUMA topologies.
 type NumaAware struct {
 	handle    framework.Handle
 	dynClient dynamic.Interface
@@ -40,7 +42,7 @@ func (pl *NumaAware) Name() string {
 }
 
 // New initializes a new plugin and returns it.
-func New(_ context.Context, obj runtime.Object, h framework.Handle) (framework.Plugin, error) {
+func New(_ context.Context, _ runtime.Object, h framework.Handle) (framework.Plugin, error) {
 	dynClient, err := dynamic.NewForConfig(h.KubeConfig())
 	if err != nil {
 		return nil, fmt.Errorf("failed to create dynamic client: %w", err)
@@ -52,7 +54,7 @@ func New(_ context.Context, obj runtime.Object, h framework.Handle) (framework.P
 	}, nil
 }
 
-func (pl *NumaAware) getTopology(ctx context.Context, nodeName string) (*v1alpha1.NumaTopologySpec, error) {
+func (pl *NumaAware) getTopology(ctx context.Context, nodeName string) (*numav1.NumaTopologySpec, error) {
 	unstruct, err := pl.dynClient.Resource(numaTopologyGVR).Get(ctx, nodeName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
@@ -68,7 +70,7 @@ func (pl *NumaAware) getTopology(ctx context.Context, nodeName string) (*v1alpha
 		return nil, err
 	}
 
-	var spec v1alpha1.NumaTopologySpec
+	var spec numav1.NumaTopologySpec
 	if err := json.Unmarshal(specJSON, &spec); err != nil {
 		return nil, err
 	}
@@ -77,7 +79,7 @@ func (pl *NumaAware) getTopology(ctx context.Context, nodeName string) (*v1alpha
 }
 
 func getPodCPURequest(pod *v1.Pod) int64 {
-	var totalCPU int64 = 0
+	var totalCPU int64
 	for _, container := range pod.Spec.Containers {
 		if cpuReq := container.Resources.Requests.Cpu(); cpuReq != nil {
 			totalCPU += cpuReq.MilliValue()
@@ -88,7 +90,7 @@ func getPodCPURequest(pod *v1.Pod) int64 {
 }
 
 // Filter invoked at the filter extension point.
-func (pl *NumaAware) Filter(ctx context.Context, state *framework.CycleState, pod *v1.Pod, nodeInfo *framework.NodeInfo) *framework.Status {
+func (pl *NumaAware) Filter(ctx context.Context, _ *framework.CycleState, pod *v1.Pod, nodeInfo *framework.NodeInfo) *framework.Status {
 	node := nodeInfo.Node()
 	if node == nil {
 		return framework.NewStatus(framework.Error, "node not found")
@@ -122,7 +124,7 @@ func (pl *NumaAware) Filter(ctx context.Context, state *framework.CycleState, po
 }
 
 // Score invoked at the score extension point.
-func (pl *NumaAware) Score(ctx context.Context, state *framework.CycleState, p *v1.Pod, nodeName string) (int64, *framework.Status) {
+func (pl *NumaAware) Score(ctx context.Context, _ *framework.CycleState, p *v1.Pod, nodeName string) (int64, *framework.Status) {
 	cpuReq := getPodCPURequest(p)
 	if cpuReq == 0 {
 		return framework.MinNodeScore, framework.NewStatus(framework.Success, "")

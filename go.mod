@@ -1,6 +1,6 @@
 module github.com/kust1q/numa-aware-scheduler
 
-go 1.26.2
+go 1.22.0
 
 require (
 	k8s.io/api v0.30.0

@@ -62,8 +62,7 @@ numa-aware-scheduler/
 │           └── numaware/  # Filter and Score logic implementation
 ├── pkg/
 │   └── api/               # Shared API definitions
-│       └── numatopology/
-│           └── v1alpha1/  # CRD Go types and deepcopy definitions
+│       └── v1/            # CRD Go types and deepcopy definitions
 ├── Dockerfile.scheduler   # Container build for the scheduler
 ├── Dockerfile.agent       # Container build for the agent
 ├── fix-gomod.sh           # Bash script fixing k8s staging go.mod replacements

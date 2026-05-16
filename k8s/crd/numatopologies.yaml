@@ -1,0 +1,37 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: numatopologies.topology.numa-aware-scheduler.io
+spec:
+  group: topology.numa-aware-scheduler.io
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                numaNodes:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      cpus:
+                        type: array
+                        items:
+                          type: integer
+                      memoryCapacityBytes:
+                        type: integer
+  scope: Cluster
+  names:
+    plural: numatopologies
+    singular: numatopology
+    kind: NumaTopology
+    shortNames:
+    - nt

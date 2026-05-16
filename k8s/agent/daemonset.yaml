@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: numa-discovery-agent
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: numa-discovery-agent
+  template:
+    metadata:
+      labels:
+        app: numa-discovery-agent
+    spec:
+      serviceAccountName: numa-discovery-agent
+      containers:
+        - name: agent
+          image: k8s.gcr.io/numa-discovery-agent:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: NODE_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+          volumeMounts:
+            - name: sysfs
+              mountPath: /sys
+              readOnly: true
+      volumes:
+        - name: sysfs
+          hostPath:
+            path: /sys
+            type: Directory

@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: numa-discovery-agent
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: numa-discovery-agent
+rules:
+  - apiGroups: ["topology.numa-aware-scheduler.io"]
+    resources: ["numatopologies"]
+    verbs: ["get", "create", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: numa-discovery-agent
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: numa-discovery-agent
+subjects:
+  - kind: ServiceAccount
+    name: numa-discovery-agent
+    namespace: kube-system

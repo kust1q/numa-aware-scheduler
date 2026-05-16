@@ -1,0 +1,24 @@
+run:
+  timeout: 5m
+  issues-exit-code: 1
+  tests: true
+
+linters:
+  enable:
+    - gofmt
+    - govet
+    - errcheck
+    - staticcheck
+    - gosimple
+    - ineffassign
+    - typecheck
+    - unused
+    - revive
+    - gosec
+    - nilerr
+  disable-all: true
+
+issues:
+  exclude-use-default: false
+  exclude-dirs:
+    - pkg/api/numatopology/v1alpha1

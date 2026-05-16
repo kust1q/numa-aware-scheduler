@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: numa-aware-scheduler
+  namespace: kube-system
+  labels:
+    component: scheduler
+    tier: control-plane
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: scheduler
+      tier: control-plane
+  template:
+    metadata:
+      labels:
+        component: scheduler
+        tier: control-plane
+    spec:
+      serviceAccountName: numa-aware-scheduler
+      containers:
+        - name: scheduler
+          image: k8s.gcr.io/numa-aware-scheduler:latest
+          imagePullPolicy: IfNotPresent
+          command:
+            - /kube-scheduler
+            - --config=/etc/kubernetes/scheduler-config.yaml
+            - --v=3
+          volumeMounts:
+            - name: scheduler-config
+              mountPath: /etc/kubernetes
+              readOnly: true
+      volumes:
+        - name: scheduler-config
+          configMap:
+            name: numa-aware-scheduler-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: numa-aware-scheduler-config
+  namespace: kube-system
+data:
+  scheduler-config.yaml: |
+    apiVersion: kubescheduler.config.k8s.io/v1
+    kind: KubeSchedulerConfiguration
+    leaderElection:
+      leaderElect: false
+    profiles:
+      - schedulerName: numa-aware-scheduler
+        plugins:
+          filter:
+            enabled:
+              - name: NumaAwarePlacement
+          score:
+            enabled:
+              - name: NumaAwarePlacement
+                weight: 1

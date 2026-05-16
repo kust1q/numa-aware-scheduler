@@ -5,6 +5,7 @@ A custom Kubernetes scheduler built with the Scheduler Framework to place resour
 [![Go](https://img.shields.io/badge/-Go-464646?style=flat-square&logo=go)](https://go.dev/)
 [![Kubernetes](https://img.shields.io/badge/-Kubernetes-464646?style=flat-square&logo=kubernetes)](https://kubernetes.io/)
 [![Docker](https://img.shields.io/badge/-Docker-464646?style=flat-square&logo=docker)](https://www.docker.com/)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ## Tech Stack
 
@@ -23,14 +24,14 @@ A custom Kubernetes scheduler built with the Scheduler Framework to place resour
 The project consists of two interacting components ensuring compute-heavy Pods hit their optimal NUMA boundary, significantly reducing memory access latency and improving L3 cache hit rates.
 
 ### 1. Hardware Discovery Agent (DaemonSet)
-A lightweight Go daemon running on every node. 
+A lightweight Go daemon running on every node.
 - Reads hardware layout (NUMA zones, CPU arrays, memory banks) via `/sys/devices/system/node`.
 - Authenticates securely via Kubernetes In-Cluster config.
 - Pushes topological maps into a Kubernetes Custom Resource (`NumaTopology`).
 
 ### 2. Custom Scheduler Plugin
 A Kubernetes Scheduler compiled with our custom `NumaAwarePlacement` logic.
-- **Filter**: Rejects candidate nodes if a Pod requests more CPUs than any *single* NUMA zone on that server can provide. 
+- **Filter**: Rejects candidate nodes if a Pod requests more CPUs than any *single* NUMA zone on that server can provide.
 - **Score**: Implements a bin-packing heuristic; the tighter the pod fits into a NUMA zone leaving the least fragmented CPUs behind, the higher the node scores.
 
 ## Project Structure
